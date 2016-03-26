@@ -1,0 +1,9 @@
+blinky
+*.lnp
+*.lst
+*.M51
+*.OBJ
+*.plg
+*.bak
+*uvgui*
+*uvopt
