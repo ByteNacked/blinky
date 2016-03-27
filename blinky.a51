@@ -49,14 +49,14 @@ CSEG					; сегмент КОДА
 ; Инициализация МК и дисплея
 
 Init:
-	mov Counter, #00h;
-	mov Switch, #00h;
+	mov Counter, #00h
+	mov Switch, #00h
+	mov Sign, #00h
 	CAll MainLoop
 
 MainLoop:
-
+	CALL pollButton
 	CALL ledDelay
-	CALL countIterationIfPressed			
 
     CALL blinkLED
 
@@ -76,24 +76,47 @@ ledDelay:
 
 ret
 
-countIterationIfPressed:
-	
-	jb BUTTON, checkIfReleased
-	inc Counter
-	ret
-		
-checkIfReleased:
-	mov R3, Counter
-	cjne R3, #00h, L1 
-	ret   //Button was not pressed (Counter = 0)
-			
-	L1:
-	CALL determineLonginessOfPress
-	mov Counter, #00h					   //RESET counter for next button press/release cycle
-	 
+pressDelay:	
+		mov	r0,#01h				 
+	outerCicle2:
+		mov	r1,#00h
+	innerCicle2:
+		mov r2,#00h
+		djnz r2, $ 
+		djnz r1,innerCicle2
+		djnz r0,outerCicle2
+
 ret
 
+pollButton:
+	jb BUTTON, pollButtonOut  // CheckIfPressed:  if button do not pressed, stop polling			
+	CALL pollButtonLoop	
+	
+	pollButtonOut:	 
+ret
+
+pollButtonLoop:
+	CALL pressDelay
+ 	inc Counter
+
+	jmp checkIfReleased
+
+	jmp pollButtonLoop
+    PBLOut:
+ret
+		
+checkIfReleased:
+	jb BUTTON, CIR1	//if Button was pressed and released go CIR1	
+	jmp pollButtonLoop 			// else go to cycle
+
+	CIR1:
+	CALL determineLonginessOfPress
+	mov Counter, #00h
+						   //RESET counter for next button press/release cycle
+	jmp PBLOut 
+
 determineLonginessOfPress:
+	mov R3, Counter
 	mov A, R3
 	subb A, #05h//LONG_BUTTON_DELAY	 //Why dont work with constant?
 	mov Sign, A	
@@ -121,9 +144,11 @@ ret
 blinkLED:
 	mov R3, Switch
     cjne R3, #02h, B1   //If last press was long , DO NOT blink
-	ret   
-B1:
-   cpl LED
+	setb LED 
+	ret
+	   
+	B1:
+    cpl LED
 ret
 
 END
