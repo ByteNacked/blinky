@@ -31,7 +31,7 @@ DSEG	at 	020h
 Counter:		DS	1	
 Switch:		DS	1	 
 Sign:		DS	1 		 		 
-//DisplayPhase:	DS	1 	 
+BlinkMult:	DS	1 	 
 //Digit0: 	DS	1 		
 //Digit1:    	DS	1 	 
 
@@ -52,6 +52,7 @@ Init:
 	mov Counter, #00h
 	mov Switch, #00h
 	mov Sign, #00h
+	mov BlinkMult, #05h
 	CAll MainLoop
 
 MainLoop:
@@ -65,7 +66,7 @@ jmp MainLoop
 
 ledDelay:
 	
-		mov	r0,#03h				 // 1 iteration ~ 0.133 s,  thou 8 iters ~ 1 sec
+		mov	r0,BlinkMult				 // 1 iteration ~ 0.133 s,  thou 8 iters ~ 1 sec
 	outerCicle:
 		mov	r1,#00h
 	innerCicle:
@@ -76,7 +77,7 @@ ledDelay:
 
 ret
 
-pressDelay:	
+pressDelay:						 //TODO: redo :)
 		mov	r0,#01h				 
 	outerCicle2:
 		mov	r1,#00h
@@ -134,11 +135,22 @@ ret
 
 
 LongPressHandler:
-   mov Switch, #02h
+    mov Switch, #02h
 ret
 
 ShortPressHandler:
-   mov Switch, #01h
+    mov Switch, #01h
+	
+	mov A, BlinkMult
+	cjne A, #03h, SPH1 
+	mov BlinkMult, #07h
+	ret
+
+	SPH1:
+	subb A, #01h
+	mov BlinkMult, A
+	clr A
+
 ret
 
 blinkLED:
