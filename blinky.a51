@@ -46,7 +46,7 @@ CSEG					; сегмент КОДА
 	reti
 
 ;-------------------------------------------------------------------------
-; Инициализация МК и дисплея
+; Инициализация МК
 
 Init:
 	mov Counter, #00h
@@ -95,7 +95,7 @@ pollButton:
 	pollButtonOut:	 
 ret
 
-pollButtonLoop:
+pollButtonLoop:				 //Blocking cycle, meanwhile polling button till released
 	CALL pressDelay
  	inc Counter
 
