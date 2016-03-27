@@ -19,18 +19,18 @@ $NOMOD51				; отключаем стандартную библиотеку функций x51-процессоров, чтобы по
 ;$NOPAGING				; разбиение на страницы
 $INCLUDE (80C515.MCU)	; подключаем свою библиотеку функций
 
-;T0COUNT EQU	50000		; максимальное кол-во тактов для счетчика 
+LONG_BUTTON_DELAY equ 05h 
 ;-------------------------------------------------------------------------
 ; Конфигурирование аппаратуры
 
 BUTTON	BIT	P1.0
 LED 	BIT P1.1
-
 ;-------------------------------------------------------------------------
 ; Резервирование внутренней памяти данных под переменные и стек
 DSEG	at 	020h		
-Counter:		DS	1		 
-Switch:		DS	1 		 		 
+Counter:		DS	1	
+Switch:		DS	1	 
+Sign:		DS	1 		 		 
 //DisplayPhase:	DS	1 	 
 //Digit0: 	DS	1 		
 //Digit1:    	DS	1 	 
@@ -57,7 +57,7 @@ MainLoop:
 
 	CALL ledDelay
 	CALL countIterationIfPressed			
-	CALL checkIfReleased
+	//CALL checkIfReleased
 
 
    cpl LED
@@ -80,26 +80,35 @@ ret
 
 countIterationIfPressed:
 	
-	jb BUTTON,checkIfReleased
+	jb BUTTON, checkIfReleased
 	inc Counter
 	ret
 		
-	checkIfReleased:
+checkIfReleased:
 	mov R3, Counter
 	cjne R3, #00h, L1 
-	 
-	CALL determineLonginessOfPress
-
+	ret   //Button was not pressed (Counter = 0)
+			
 	L1:
-
+	CALL determineLonginessOfPress
+	mov Counter, #00h					   //RESET counter for next button press/release cycle
+	 
 ret
 
 determineLonginessOfPress:
 	mov A, R3
-	sub A, #05h
+	subb A, #05h//LONG_BUTTON_DELAY	 //Why dont work with constant?
+	mov Sign, A	
 
 
+	JB Sign.7, S1
+	   CALL LongPressHandler	 // if LONG_BUTTON_DELAY >= Counter (LongPress)
 
+	ret
+					 // if LONG_BUTTON_DELAY < Counter (ShortPress)  
+	S1: 
+	CAll ShortPressHandler
+	
 ret
 
 
