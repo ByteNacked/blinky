@@ -57,17 +57,15 @@ MainLoop:
 
 	CALL ledDelay
 	CALL countIterationIfPressed			
-	//CALL checkIfReleased
 
-
-   cpl LED
+    CALL blinkLED
 
 jmp MainLoop
 
 
 ledDelay:
 	
-		mov	r0,#03h
+		mov	r0,#03h				 // 1 iteration ~ 0.133 s,  thou 8 iters ~ 1 sec
 	outerCicle:
 		mov	r1,#00h
 	innerCicle:
@@ -118,6 +116,14 @@ ret
 
 ShortPressHandler:
    mov Switch, #01h
+ret
+
+blinkLED:
+	mov R3, Switch
+    cjne R3, #02h, B1   //If last press was long , DO NOT blink
+	ret   
+B1:
+   cpl LED
 ret
 
 END
